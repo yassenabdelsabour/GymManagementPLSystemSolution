@@ -14,7 +14,7 @@ namespace GymManagementDAL.Entities
         {
             get
             {
-                if(EndData>= DateTime.Now)
+                if(EndData <= DateTime.Now)
                 
                     return "Expired"; 
               

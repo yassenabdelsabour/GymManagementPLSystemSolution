@@ -1,4 +1,7 @@
 using GymManagementDAL.Data.Contexts;
+using GymManagementDAL.Entities;
+using GymManagementDAL.Repositories.Classes;
+using GymManagementDAL.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
@@ -17,6 +20,10 @@ namespace GymManagementPL
                 //Options.UseSqlServer("Server=DESKTOP-T8S46TQ;Database=GymManagementGroup01;Trusted_Connection=True;TrustServerCertificate=True;");
                 Options.UseSqlServer(builder.Configuration["ConnectionStrings : DefaultConnection"]);
             });
+            //builder.Services.AddScoped<GenericRepository<Member> , GenericRepository<Member>>();
+            //builder.Services.AddScoped(typeof(GenericRepository<>), typeof(GenericRepository<>));
+            //builder.Services.AddScoped<IPlanRepository, PlanRepository>();
+            builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
             var app = builder.Build();
 
