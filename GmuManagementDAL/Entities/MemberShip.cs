@@ -9,12 +9,12 @@ namespace GymManagementDAL.Entities
     public class MemberShip:BaseEntity
     {
         // StartDate = CreatedAt of BaseEntity
-        public DateTime EndData { get; set; }
+        public DateTime EndDate { get; set; }
         public string Status
         {
             get
             {
-                if(EndData <= DateTime.Now)
+                if(EndDate <= DateTime.Now)
                 
                     return "Expired"; 
               

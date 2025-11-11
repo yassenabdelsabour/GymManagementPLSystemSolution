@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace GymManagementBLL.Service.Classes
 {
-    internal class SessionService : ISessionService
+    public class SessionService : ISessionService
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
@@ -23,25 +23,29 @@ namespace GymManagementBLL.Service.Classes
 
         public bool CreateSession(CreateSessionViewModel createsession)
         {
-            try 
+            try
             {
-                if (!IsTranierExist(createsession.TrainerId) || !IsCategoryExist(createsession.CategoryId) || !IsValidDateRange(createsession.StartDate, createsession.EndDate))
-                    return false;
+                if (!IsTranierExist(createsession.TrainerId)) return false;
+                if (!IsCategoryExist(createsession.CategoryId)) return false;
+                if (!IsValidDateRange(createsession.StartDate, createsession.EndDate)) return false;
+
                 var MappingSession = _mapper.Map<CreateSessionViewModel, Session>(createsession);
-                _unitOfWork.GetRepository<Session>().Add(MappingSession);
+                _unitOfWork.SessionRepository.Add(MappingSession);
                 return _unitOfWork.SaveChanges() > 0;
             }
-            catch (Exception)
+            catch
             {
                 return false;
             }
         }
 
+
+
         public UpdateSessionViewModel? GetSessionToUpdate  (int sessionId)
         {
-            var Session = _unitOfWork.GetRepository<Session>().GetById(sessionId);
+            var Session = _unitOfWork.SessionRepository.GetById(sessionId);
             if (!IsSessionAvailableForUpdateing(Session!)) return null;
-            return _mapper.Map< UpdateSessionViewModel>(Session);
+            return _mapper.Map<UpdateSessionViewModel>(Session);
         }
 
         public bool UpdateSession(UpdateSessionViewModel updateSession, int sessionId)
@@ -50,13 +54,13 @@ namespace GymManagementBLL.Service.Classes
             {
                 var Session = _unitOfWork.SessionRepository.GetById(sessionId);
                 if (!IsSessionAvailableForUpdateing(Session!)) return false;
-                if (!IsTranierExist(updateSession.TrainerId) || !IsValidDateRange(updateSession.StartDate, updateSession.EndDate))
-                    return false;
+                if (!IsTranierExist(updateSession.TrainerId) ) return false;
+                if (!IsValidDateRange(updateSession.StartDate, updateSession.EndDate)) return false;
                 _mapper.Map(updateSession, Session);
                 Session!.UpdatedAt = DateTime.Now;
                 return _unitOfWork.SaveChanges() > 0;
             }
-            catch (Exception)
+            catch 
             {
                 return false;
             }
@@ -65,27 +69,27 @@ namespace GymManagementBLL.Service.Classes
         {
             try
             {
-                var Session = _unitOfWork.GetRepository<Session>().GetById(sessionId);
+                var Session = _unitOfWork.SessionRepository.GetById(sessionId);
                 if (!IsSessionAvailableForRemove(Session!)) return false;
-                _unitOfWork.GetRepository<Session>().Delete(Session!);
+                _unitOfWork.SessionRepository.Delete(Session!);
                 return _unitOfWork.SaveChanges() > 0;
             }
-            catch (Exception)
+            catch 
             {
                 return false;
             }
 
-            }
+        }
 
         #region Helpers
         private bool IsTranierExist(int TrainerId)
         {
-            return _unitOfWork.GetRepository<Trainer>().GetById(TrainerId) != null;
+            return _unitOfWork.GetRepository<Trainer>().GetById(TrainerId) is not null;
 
         }
         private bool IsCategoryExist(int CategoryId)
         {
-            return _unitOfWork.GetRepository<Trainer>().GetById(CategoryId) != null;
+            return _unitOfWork.GetRepository<Category>().GetById(CategoryId) is not null;
 
         }
         private bool IsValidDateRange(DateTime StartDate, DateTime EndDate)
@@ -95,18 +99,21 @@ namespace GymManagementBLL.Service.Classes
         private bool IsSessionAvailableForUpdateing(Session session)
         {
            if(session == null) return false;
-           if(session.StartData <= DateTime.Now && session.EndData < DateTime.Now ) return false;
-           var HasActiveBooking = _unitOfWork.SessionRepository.GetCountOfBookedSlots(session.Id) > 0;
-            if(HasActiveBooking) return true;
+            if (session.EndDate < DateTime.Now) return false;
+            if (session.StartDate <= DateTime.Now ) return false;
+           var HasActiveBooking = _unitOfWork.SessionRepository.GetCountOfBookedSlots(session.Id)>0;
+            if(HasActiveBooking) return false;
               return true;
 
         }
         private bool IsSessionAvailableForRemove(Session session)
         {
             if (session == null) return false;
-            if (session.StartData <= DateTime.Now && session.EndData < DateTime.Now && session.EndData > DateTime.Now) return false;
+            if (session.EndDate < DateTime.Now) return true;
+            if (session.StartDate <= DateTime.Now) return false;
+            if( session.EndDate > DateTime.Now) return false;
             var HasActiveBooking = _unitOfWork.SessionRepository.GetCountOfBookedSlots(session.Id) > 0;
-            if (HasActiveBooking) return true;
+            if (HasActiveBooking) return false;
             return true;
 
         }
@@ -115,7 +122,7 @@ namespace GymManagementBLL.Service.Classes
 
         public IEnumerable<SessionViewModel> GetAllSessions()
         {
-            var Sessions = _unitOfWork.SessionRepository.GetAllSessionsWithTrainersAndCateagries();
+            var Sessions = _unitOfWork.SessionRepository.GetAllSessionWithTrainersAndCateogries();
             if (Sessions == null || !Sessions.Any())
                 return [];
             #region Manual Mapping
@@ -134,7 +141,7 @@ namespace GymManagementBLL.Service.Classes
 
 
             #region Auto Matic Mapping
-            var MappingSessions = _mapper.Map<IEnumerable<SessionViewModel>>(Sessions);
+            var MappingSessions = _mapper.Map<IEnumerable<Session> , IEnumerable<SessionViewModel>>(Sessions);
             return MappingSessions;
 
             #endregion
@@ -144,25 +151,40 @@ namespace GymManagementBLL.Service.Classes
 
         public SessionViewModel? GetSessionById(int id)
         {
-            var Session = _unitOfWork.SessionRepository.GetSessionWithTrainerAndCategoryById(id);
+            var Session = _unitOfWork.SessionRepository.GetSessionByWithTrainersAndCateogries(id);
             if (Session == null) return null;
-            //return new SessionViewModel()
-            //{
-            //    Id = Session.Id,
-            //    Description = Session.Description,
-            //    TrainerName = Session.SessionTrainer.Name,
-            //    CategoryName = Session.SessionCategory.CategoryName,
-            //    StartDate = Session.StartData,
+           //return new SessionViewModel()
+           // {
+           //     Id = Session.Id,
+           //     Description = Session.Description,
+           //     TrainerName = Session.SessionTrainer.Name,
+           //     CategoryName = Session.SessionCategory.CategoryName,
+           //     StartDate = Session.StartData,
             //    EndDate = Session.EndData,
             //    Capacity = Session.Capacity,
             //    AvailableSlots = Session.Capacity - _unitOfWork.SessionRepository.GetCountOfBookedSlots(Session.Id)
             //};
-            var MappingSession = _mapper.Map<SessionViewModel>(Session);
+        var MappingSession = _mapper.Map<Session,SessionViewModel>(Session);
             return MappingSession;
         }
 
-        
+        public IEnumerable<TrainerSelectViewModel> GetAllTrainersForDropdown()
+        {
+            var Trainers= _unitOfWork.GetRepository<Trainer>().GetAll();
 
-       
+
+            return _mapper.Map<IEnumerable<Trainer>,IEnumerable<TrainerSelectViewModel>>(Trainers);
+        }
+
+        public IEnumerable<CategorySelectViewModel> GetAllCategoriesForDropdown()
+        {
+           var Categories= _unitOfWork.GetRepository<Category>().GetAll();
+              return _mapper.Map<IEnumerable<Category>, IEnumerable<CategorySelectViewModel>>(Categories);
+        }
+
+        //string? ISessionService.GetSessionToUpdate(int id)
+        //{
+        //    throw new NotImplementedException();
+        //}
     }
 }

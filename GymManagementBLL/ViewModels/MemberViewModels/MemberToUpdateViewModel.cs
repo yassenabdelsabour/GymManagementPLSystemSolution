@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace GymManagementBLL.ViewModels.MemberViewModel
 {
-    internal class MemberToUpdateViewModel
+    public class MemberToUpdateViewModel
     {
         [Required(ErrorMessage = "Name is Required"), StringLength(50, MinimumLength = 2, ErrorMessage = "Name Must be Between 2 and 50 Char")]
         [RegularExpression(@"^[a-zA-Z\s]+$", ErrorMessage = "Name must contain only letters and spaces.")]
@@ -21,7 +21,8 @@ namespace GymManagementBLL.ViewModels.MemberViewModel
 
         [Required(ErrorMessage = "Phone is Required")]
         [DataType(DataType.PhoneNumber)]
-        [RegularExpression(@"^(010 || 011 || 012 || 015)\d{8}$", ErrorMessage = "Phone Number Must Be Vaild Egyption Phone Number.")]
+        [RegularExpression(@"^(010 || 011 || 012 || 015)\d{11}$", ErrorMessage = "Phone Number Must Be Vaild Egyption Phone Number.")]
+
         [Phone(ErrorMessage = "Invalid Phone Number")]
         public string Phone { get; set; } = null!;
 

@@ -7,15 +7,14 @@ using System.Threading.Tasks;
 
 namespace GymManagementBLL.Service.InterFaces
 {
-    internal interface ITrainerService
+    public interface ITrainerService
     {
         IEnumerable<TrainerViewModel> GetAllTrainers();
         bool CreateTrainer(CreateTrainerViewModel createTrainer);
-        bool UpdateTrainerDetails(int TrainerId, UpdateTrainerViewModel UpdatedTrainer);
-        TrainerToUpdateViewModel? GetTrainerToUpdate(int TrainerId);
+        bool UpdateTrainerDetails(int TrainerId, TrainerToUpdateViewModel UpdatedTrainer);
+        TrainerToUpdateViewModel? GetTrainerToUpdate(int TrainerId );
         bool RemoveTrainer(int TrainerId);
         TrainerViewModel? GetTrainerDetails(int TrainerId);
-
 
     }
 }

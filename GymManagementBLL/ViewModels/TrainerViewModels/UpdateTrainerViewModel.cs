@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace GymManagementBLL.ViewModels.TrainerViewModels
 {
-   internal class UpdateTrainerViewModel
+   public class UpdateTrainerViewModel
     {
         public string Name { get; set; } = null!;
 
@@ -17,7 +17,7 @@ namespace GymManagementBLL.ViewModels.TrainerViewModels
         public string Email { get; set; } = null!;
 
         [Required(ErrorMessage = "Phone is Required")]
-        [RegularExpression(@"^(010 || 011 || 012 || 015)\d{8}$", ErrorMessage = "Phone Number Must Be Vaild Egyption Phone Number.")]
+        [RegularExpression(@"^(010 || 011 || 012 || 015)\d{11}$", ErrorMessage = "Phone Number Must Be Vaild Egyption Phone Number.")]
         [Phone(ErrorMessage = "Invalid Phone Number")]
         public string Phone { get; set; } = null!;
 
